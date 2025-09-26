@@ -1,0 +1,54 @@
+service: EntityService                 # имя сервиса на схеме
+alias: ES                              # алиас для связей
+color: "#E6F7FF"                       # голубой узел
+
+controllers:
+  EntityController:
+    endpoints:
+      - method: GET
+        path: /api/v1/entities
+        operation: GetEntityList
+        auth: optional
+        issuer: user-sso
+        deprecated: false
+        csrf: off
+
+
+      - method: GET
+        path: /api/v1/entities/{id}
+        operation: GetEntityById
+        auth: required
+        issuer: user-sso
+        deprecated: false
+        csrf: off
+        links:
+          - "BS#GetBillingProfile"         # подтягиваем платёжный профиль
+
+      - method: POST
+        path: /api/v1/entities
+        operation: CreateEntity
+        auth: required
+        issuer: user-sso
+        deprecated: false
+        csrf: on
+        links:
+          - "OS#CreateOrder"               # создаём заказ под сущность
+          - "BS#AuthorizePayment"          # авторизуем оплату
+
+      - method: PATCH
+        path: /api/v1/entities/{id}
+        operation: UpdateEntity
+        auth: required
+        issuer: user-sso
+        deprecated: false
+        csrf: on
+
+      - method: DELETE
+        path: /api/v1/entities/{id}
+        operation: DeleteEntity
+        auth: required
+        issuer: user-sso
+        deprecated: false
+        csrf: on
+        links:
+          - "OS#CancelOrder"               # отменяем заказ, если он был создан

@@ -1,0 +1,75 @@
+service: BillingService                # имя сервиса на схеме
+alias: BS                              # алиас для связей
+color: "#E9FFE9"                       # зелёный узел
+
+controllers:
+  InvoiceController:
+    endpoints:
+      - method: POST
+        path: /api/v1/invoices
+        operation: CreateInvoice
+        auth: required
+        issuer: service-jwt
+        deprecated: false
+        csrf: off
+        links: []
+
+      - method: POST
+        path: /api/v1/invoices/sbp
+        operation: CreateSbpInvoice
+        auth: required
+        issuer: service-jwt
+        deprecated: false
+        csrf: off
+        links:
+          - "OS#GetOrder"                   # валидация заказа
+          - "ES#GetEntityById"              # валидация сущности
+
+      - method: GET
+        path: /api/v1/invoices/{id}/status
+        operation: GetPaymentStatus
+        auth: required
+        issuer: service-jwt
+        deprecated: false
+        csrf: off
+        links: []
+
+      - method: DELETE
+        path: /api/v1/invoices/{id}
+        operation: CancelInvoice
+        auth: required
+        issuer: service-jwt
+        deprecated: false
+        csrf: off
+        links: []
+
+  PaymentController:
+    endpoints:
+      - method: POST
+        path: /api/v1/payments/authorize
+        operation: AuthorizePayment
+        auth: required
+        issuer: service-jwt
+        deprecated: false
+        csrf: off
+        links:
+          - "OS#CreateOrder"                # авторизация под заказ
+          - "ES#CreateEntity"               # (исторический кейс) авторизация под создание сущности
+
+      - method: POST
+        path: /api/v1/payments/charge
+        operation: ChargeByToken
+        auth: required
+        issuer: service-jwt
+        deprecated: false
+        csrf: off
+        links: []
+
+      - method: GET
+        path: /api/v1/billing-profiles/{userId}
+        operation: GetBillingProfile
+        auth: required
+        issuer: service-jwt
+        deprecated: false
+        csrf: off
+        links: []

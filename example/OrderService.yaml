@@ -1,0 +1,59 @@
+service: OrderService                  # имя сервиса на схеме
+alias: OS                              # алиас для связей
+color: "#FFF7E6"                       # теплый узел
+
+controllers:
+  OrderController:
+    endpoints:
+      - method: POST
+        path: /api/v1/orders
+        operation: CreateOrder
+        auth: required
+        issuer: user-sso
+        deprecated: false
+        csrf: on
+        links:
+          - "ES#GetEntityById"             # проверяем сущность
+          - "BS#CreateInvoice"             # создаём инвойс на оплату
+
+      - method: GET
+        path: /api/v1/orders/{id}
+        operation: GetOrder
+        auth: optional
+        issuer: user-sso
+        deprecated: false
+        csrf: off
+        links:
+          - "BS#GetPaymentStatus"          # статус оплаты
+
+      - method: POST
+        path: /api/v1/orders/{id}/pay
+        operation: PayOrder
+        auth: required
+        issuer: user-sso
+        deprecated: false
+        csrf: on
+        links:
+          - "BS#ChargeByToken"             # списание по сохранённой карте
+          - "BS#CreateSbpInvoice"          # либо инвойс по СБП
+
+      - method: DELETE
+        path: /api/v1/orders/{id}
+        operation: CancelOrder
+        auth: required
+        issuer: user-sso
+        deprecated: false
+        csrf: on
+        links:
+          - "BS#CancelInvoice"             # гасим инвойс у биллинга
+
+  AdminController:
+    endpoints:
+      - method: GET
+        path: /api/v1/orders
+        operation: ListOrders
+        auth: required
+        issuer: ldap-sso
+        deprecated: false
+        csrf: off
+        links: []
